@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"log"
-	"os"
 	"time"
 
 	"foxyproxy/doapi"
@@ -18,13 +17,8 @@ func New() *App {
 }
 
 func (a *App) RunProxy(ctx context.Context) error {
-	token := os.Getenv("DO_TOKEN")
-	if token == "" {
-		log.Fatal("DO_TOKEN is not set")
-	}
-
-	sc := doapi.NewSimpleClient(token, getSshKey(), time.Minute)
-
+	sc := newClient()
+	log.Println("starting droplet...")
 	s, err := sc.StartDroplet(ctx, "proxy")
 	if err != nil {
 		log.Println("cannot start droplet", err)
@@ -34,10 +28,13 @@ func (a *App) RunProxy(ctx context.Context) error {
 
 		return err
 	}
+	log.Println("droplet is active!")
 
+	log.Println("staring proxy...")
 	proxy, err := sshproxy.StartProxy(s.PublicIP, 1337)
 	if err != nil {
 		log.Println("cannot start proxy", err)
+		time.Sleep(30 * time.Second)
 		deleteDroplet(ctx, sc, s)
 
 		return err
@@ -55,14 +52,10 @@ func (a *App) RunProxy(ctx context.Context) error {
 }
 
 func (a *App) RunTestServer(ctx context.Context) error {
-	token := os.Getenv("DO_TOKEN")
-	if token == "" {
-		log.Fatal("DO_TOKEN is not set")
-	}
+	sc := newClient()
 
-	sc := doapi.NewSimpleClient(token, getSshKey(), time.Minute)
-
-	s, err := sc.StartDroplet(ctx, "proxy")
+	log.Println("starting droplet...")
+	s, err := sc.StartDroplet(ctx, "test-server")
 	if err != nil {
 		log.Println("cannot start droplet", err)
 		if s.Id != 0 {
@@ -72,7 +65,7 @@ func (a *App) RunTestServer(ctx context.Context) error {
 		return err
 	}
 
-	log.Println("Droplet started! Run ssh root@" + s.PublicIP)
+	log.Println("droplet is active! Run ssh root@" + s.PublicIP)
 
 	<-ctx.Done()
 	deleteDroplet(context.Background(), sc, s)
@@ -80,13 +73,19 @@ func (a *App) RunTestServer(ctx context.Context) error {
 	return nil
 }
 
+func newClient() *doapi.SimpleClient {
+	config, err := loadConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+	sc := doapi.NewSimpleClient(config.DoToken, config.Fingerprint, time.Minute)
+
+	return sc
+}
+
 func deleteDroplet(ctx context.Context, sc *doapi.SimpleClient, s doapi.Server) {
 	log.Println("deleting droplet with id", s.Id)
 	if err := sc.DeleteDroplet(ctx, s.Id); err != nil {
 		log.Println("cannot delete droplet", err)
 	}
-}
-
-func getSshKey() string {
-	return "76:4f:ef:75:a5:5d:35:7a:fa:50:dd:41:85:d1:34:41"
 }

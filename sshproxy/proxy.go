@@ -2,7 +2,10 @@ package sshproxy
 
 import (
 	"fmt"
+	"log"
+	"net"
 	"os/exec"
+	"time"
 )
 
 type Proxy struct {
@@ -27,13 +30,37 @@ func (p *Proxy) Stop() error {
 }
 
 func StartProxy(serverIp string, port int) (*Proxy, error) {
-	portStr := fmt.Sprintf("%d", port)
-	sshCmd := "ssh -D " + portStr + " -C -q -N root@" + serverIp
-	cmd := exec.Command("sh", "-c", sshCmd)
-	err := cmd.Start()
+	err := waitForPort(serverIp)
 	if err != nil {
 		return nil, err
 	}
 
+	portStr := fmt.Sprintf("%d", port)
+	sshCmd := "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -D " + portStr + " -C -N root@" + serverIp
+	cmd := exec.Command("sh", "-c", sshCmd)
+	err = cmd.Start()
+	if err != nil {
+		return nil, fmt.Errorf("failed to start ssh tunnel, %w", err)
+	}
 	return &Proxy{cmd: cmd}, nil
+}
+
+func waitForPort(serverIP string) error {
+	log.Println("waiting for ssh to become available on ", serverIP)
+	timeout := time.Second
+	retries := 60
+	for retries > 0 {
+		conn, err := net.DialTimeout("tcp", net.JoinHostPort(serverIP, "22"), timeout)
+		if err != nil {
+			retries--
+			time.Sleep(time.Second)
+			continue
+		}
+		if conn != nil {
+			defer conn.Close()
+			return nil
+		}
+	}
+
+	return fmt.Errorf("ssh is not available on ip %s", serverIP)
 }
