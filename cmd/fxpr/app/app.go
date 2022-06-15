@@ -2,48 +2,49 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
-	"foxyproxy/doapi"
-	"foxyproxy/sshproxy"
+	"foxyproxy/droplets"
+	"foxyproxy/proxy"
 )
 
 type App struct {
+	config config
+	client *droplets.SimpleClient
 }
 
-func New() *App {
-	return &App{}
+func New() (*App, error) {
+	a := &App{}
+	err := a.init()
+	if err != nil {
+		return nil, fmt.Errorf("initialization error, %w", err)
+	}
+
+	return a, nil
 }
 
 func (a *App) RunProxy(ctx context.Context) error {
-	sc := newClient()
-	log.Println("starting droplet...")
-	s, err := sc.StartDroplet(ctx, "proxy")
+	s, err := a.startDroplet(ctx, "proxy")
 	if err != nil {
-		log.Println("cannot start droplet", err)
-		if s.Id != 0 {
-			deleteDroplet(ctx, sc, s)
-		}
-
 		return err
 	}
-	log.Println("droplet is active!")
 
 	log.Println("staring proxy...")
-	proxy, err := sshproxy.StartProxy(s.PublicIP, 1337)
+	pr, err := proxy.StartProxy(s.PublicIP, 1337)
 	if err != nil {
 		log.Println("cannot start proxy", err)
 		time.Sleep(30 * time.Second)
-		deleteDroplet(ctx, sc, s)
+		a.deleteDroplet(ctx, s)
 
 		return err
 	}
-	log.Println("proxy started: ", proxy)
+	log.Println("proxy started: ", pr)
 
 	<-ctx.Done()
-	deleteDroplet(context.Background(), sc, s)
-	err = proxy.Stop()
+	a.deleteDroplet(context.Background(), s)
+	err = pr.Stop()
 	if err != nil {
 		log.Println("cannot stop proxy", err)
 	}
@@ -52,40 +53,48 @@ func (a *App) RunProxy(ctx context.Context) error {
 }
 
 func (a *App) RunTestServer(ctx context.Context) error {
-	sc := newClient()
-
-	log.Println("starting droplet...")
-	s, err := sc.StartDroplet(ctx, "test-server")
+	s, err := a.startDroplet(ctx, "test")
 	if err != nil {
-		log.Println("cannot start droplet", err)
-		if s.Id != 0 {
-			deleteDroplet(ctx, sc, s)
-		}
-
 		return err
 	}
-
-	log.Println("droplet is active! Run ssh root@" + s.PublicIP)
+	log.Println("Run ssh root@" + s.PublicIP)
 
 	<-ctx.Done()
-	deleteDroplet(context.Background(), sc, s)
+	a.deleteDroplet(context.Background(), s)
 
 	return nil
 }
 
-func newClient() *doapi.SimpleClient {
-	config, err := loadConfig()
+func (a *App) init() error {
+	c, err := loadConfig()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-	sc := doapi.NewSimpleClient(config.DoToken, config.Fingerprint, time.Minute)
+	a.config = c
+	a.client = droplets.NewSimpleClient(c.DoToken, c.Fingerprint, time.Minute)
 
-	return sc
+	return nil
 }
 
-func deleteDroplet(ctx context.Context, sc *doapi.SimpleClient, s doapi.Server) {
+func (a *App) deleteDroplet(ctx context.Context, s droplets.Server) {
 	log.Println("deleting droplet with id", s.Id)
-	if err := sc.DeleteDroplet(ctx, s.Id); err != nil {
+	if err := a.client.DeleteDroplet(ctx, s.Id); err != nil {
 		log.Println("cannot delete droplet", err)
 	}
+}
+
+func (a *App) startDroplet(ctx context.Context, tagPrefix string) (droplets.Server, error) {
+	log.Println("starting droplet...")
+	s, err := a.client.StartDroplet(ctx, tagPrefix)
+	if err != nil {
+		log.Println("cannot start droplet", err)
+		if s.Id != 0 {
+			a.deleteDroplet(ctx, s)
+		}
+
+		return s, err
+	}
+	log.Println("droplet is active!")
+
+	return s, nil
 }

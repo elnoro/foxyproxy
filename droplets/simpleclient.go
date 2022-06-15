@@ -1,4 +1,4 @@
-package doapi
+package droplets
 
 import (
 	"context"

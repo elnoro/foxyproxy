@@ -7,11 +7,14 @@ import (
 	"os"
 )
 
+const defaultProxyPort = 1337
+
 var errConfigNotFound = errors.New("no valid config found")
 
 type config struct {
 	DoToken     string `json:"do_token"`
 	Fingerprint string `json:"fingerprint"`
+	Port        int    `json:"port,omitempty"`
 }
 
 func loadConfig() (config, error) {
@@ -30,6 +33,9 @@ func loadConfig() (config, error) {
 		err = json.Unmarshal(b, &c)
 		if err != nil {
 			return c, fmt.Errorf("malformed config, %w", err)
+		}
+		if c.Port == 0 {
+			c.Port = defaultProxyPort
 		}
 
 		return c, nil

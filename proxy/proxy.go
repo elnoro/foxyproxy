@@ -1,4 +1,4 @@
-package sshproxy
+package proxy
 
 import (
 	"fmt"
@@ -32,7 +32,7 @@ func (p *Proxy) Stop() error {
 func StartProxy(serverIp string, port int) (*Proxy, error) {
 	err := waitForPort(serverIp)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("issues with the server, %w", err)
 	}
 
 	portStr := fmt.Sprintf("%d", port)
@@ -46,7 +46,7 @@ func StartProxy(serverIp string, port int) (*Proxy, error) {
 }
 
 func waitForPort(serverIP string) error {
-	log.Println("waiting for ssh to become available on ", serverIP)
+	log.Println("waiting for ssh to become available on", serverIP)
 	timeout := time.Second
 	retries := 60
 	for retries > 0 {
@@ -57,7 +57,10 @@ func waitForPort(serverIP string) error {
 			continue
 		}
 		if conn != nil {
-			defer conn.Close()
+			err := conn.Close()
+			if err != nil {
+				return fmt.Errorf("connectivity issues, %w", err)
+			}
 			return nil
 		}
 	}
