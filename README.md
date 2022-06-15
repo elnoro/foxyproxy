@@ -15,7 +15,7 @@ Available Commands:
 ## Configuration
 
 ### Config file
-Put the config file in `"$HOME/.config/fxpr/config.json")`
+Put the config file in `"$HOME/.config/fxpr/config.json"`
 You need to create a Digital Ocean token and register an ssh key.
 
 Config file example:
