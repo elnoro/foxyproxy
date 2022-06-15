@@ -11,6 +11,10 @@ Available Commands:
   test          Start a droplet you can SSH into. Hit Ctrl-C to destroy the droplet
 ```
 
+
+## Configuration
+
+### Config file
 Put the config file in `"$HOME/.config/fxpr/config.json")`
 You need to create a Digital Ocean token and register an ssh key.
 
@@ -22,3 +26,7 @@ Config file example:
   "port": 1337
 }
 ```
+
+### Firefox
+
+[Use this instruction from Digital Ocean](https://www.digitalocean.com/community/tutorials/how-to-route-web-traffic-securely-without-a-vpn-using-a-socks-tunnel#step-2-mdash-configuring-firefox-to-use-the-tunnel)
