@@ -4,7 +4,7 @@ builds:
     goos:
       - darwin
     binary: fxpr
-    main: ./cmd/fxpr/app/main.go
+    main: ./cmd/fxpr/main.go
 
 snapshot:
   name_template: SNAPSHOT-{{.Commit}}
