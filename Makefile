@@ -14,3 +14,7 @@ lintC:
 coverage:
 	go test ./... -coverprofile coverage.out
 	go tool cover -html=coverage.out -o coverage.html
+
+
+releaseC:
+	docker run --rm -e GITHUB_TOKEN -v `pwd`:/app -w /app goreleaser/goreleaser release

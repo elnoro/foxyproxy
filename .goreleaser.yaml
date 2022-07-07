@@ -1,0 +1,20 @@
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+    binary: fxpr
+    main: ./cmd/fxpr/app/main.go
+
+snapshot:
+  name_template: SNAPSHOT-{{.Commit}}
+
+brews:
+  -
+    tap:
+      owner: elnoro
+      name: homebrew-tap
+    folder: Formula
+    homepage: "https://github.com/elnoro/foxyproxy"
+    description: "fxpr is a CLI tool to quickly spin up and destroy DigitalOcean servers"
+
