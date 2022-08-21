@@ -34,7 +34,7 @@ func main() {
 			defer wg.Done()
 			err := a.RunProxy(ctx)
 			if err != nil {
-				log.Println(err)
+				log.Fatal(err)
 			}
 		}()
 	case "test":
@@ -43,7 +43,7 @@ func main() {
 			defer wg.Done()
 			err := a.RunTestServer(ctx)
 			if err != nil {
-				log.Println(err)
+				log.Fatal(err)
 			}
 		}()
 	case "help":

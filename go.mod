@@ -2,7 +2,10 @@ module foxyproxy
 
 go 1.18
 
-require github.com/digitalocean/godo v1.80.0
+require (
+	github.com/digitalocean/godo v1.80.0
+	github.com/peterbourgon/ff/v3 v3.3.0
+)
 
 require (
 	github.com/golang/protobuf v1.5.2 // indirect
@@ -11,5 +14,4 @@ require (
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
