@@ -12,6 +12,9 @@ import (
 	"foxyproxy/cmd/fxpr/app"
 )
 
+var version = "development"
+var date = "0000-00-00"
+
 func main() {
 	if len(os.Args) < 2 {
 		showHelp()
@@ -46,8 +49,15 @@ func main() {
 				log.Println(err)
 			}
 		}()
+	case "list":
+		err := a.ListDroplets(ctx)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return
 	case "help":
 		showHelp()
+		return
 	default:
 		fmt.Println("Invalid command.")
 		showHelp()
@@ -63,9 +73,11 @@ func main() {
 }
 
 func showHelp() {
-	fmt.Print("fxpr is a CLI tool to quickly spin up and destroy DigitalOcean servers" +
-		"\n\nUsage:\n  fxpr [command]\n\nAvailable Commands:" +
-		"\n  proxy         Start a droplet and an SSH tunnel on localhost. Hit Ctrl-C to destroy the droplet" +
-		"\n  test          Start a droplet you can SSH into. Hit Ctrl-C to destroy the droplet" +
-		"\n")
+	fmt.Print("fxpr is a CLI tool to quickly spin up and destroy DigitalOcean servers"+
+		"\nVersion: "+version+", built on "+date,
+		"\n\nUsage:\n  fxpr [command]\n\nAvailable Commands:"+
+			"\n  proxy         Start a droplet and an SSH tunnel on localhost. Hit Ctrl-C to destroy the droplet"+
+			"\n  test          Start a droplet you can SSH into. Hit Ctrl-C to destroy the droplet"+
+			"\n  list          Shows the list of existing droplets"+
+			"\n")
 }

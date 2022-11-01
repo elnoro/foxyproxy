@@ -1,5 +1,5 @@
 build:
-	go build
+	go build -o fxpr -buildvcs=false ./cmd/fxpr
 
 test:
 	go test ./... -timeout=30s -race
@@ -14,3 +14,6 @@ lintC:
 coverage:
 	go test ./... -coverprofile coverage.out
 	go tool cover -html=coverage.out -o coverage.html
+
+releaseC:
+	docker run --rm -e GITHUB_TOKEN -v `pwd`:/app -w /app goreleaser/goreleaser release

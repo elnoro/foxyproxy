@@ -65,6 +65,20 @@ func (a *App) RunTestServer(ctx context.Context) error {
 	return nil
 }
 
+func (a *App) ListDroplets(ctx context.Context) error {
+	servers, err := a.client.List(ctx)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Servers:")
+	for _, server := range servers {
+		fmt.Println(server.Id, server.Name, server.PublicIP)
+	}
+
+	return nil
+}
+
 func (a *App) init() error {
 	c, err := loadConfig()
 	if err != nil {

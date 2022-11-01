@@ -9,6 +9,7 @@ Usage:
 Available Commands:
   proxy         Start a droplet and an SSH tunnel on localhost. Hit Ctrl-C to destroy the droplet
   test          Start a droplet you can SSH into. Hit Ctrl-C to destroy the droplet
+  list          Shows the list of existing droplets
 ```
 
 

@@ -17,6 +17,7 @@ type SimpleClient struct {
 type Server struct {
 	Id       int
 	PublicIP string
+	Name     string
 }
 
 func NewSimpleClient(token string, fingerPrint string, waitTimeout time.Duration) *SimpleClient {
@@ -65,6 +66,30 @@ func (s *SimpleClient) StartDroplet(ctx context.Context, tagPrefix string) (Serv
 	server.PublicIP = publicIP
 
 	return server, nil
+}
+
+func (s *SimpleClient) List(ctx context.Context) ([]Server, error) {
+	opts := &godo.ListOptions{PerPage: 200}
+	droplets, _, err := s.client.Droplets.List(ctx, opts)
+	if err != nil {
+		return nil, fmt.Errorf("listing droplets: %w", err)
+	}
+
+	var servers []Server
+	for _, droplet := range droplets {
+		ipv4, err := droplet.PublicIPv4()
+		if err != nil {
+			ipv4 = "no ip"
+		}
+
+		servers = append(servers, Server{
+			Id:       droplet.ID,
+			Name:     droplet.Name,
+			PublicIP: ipv4,
+		})
+	}
+
+	return servers, nil
 }
 
 func (s *SimpleClient) DeleteDroplet(ctx context.Context, dropletID int) error {
