@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -30,6 +31,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	fs := flag.NewFlagSet("flag", flag.ExitOnError)
+	d := fs.Bool("d", false, "run process in the background")
+
 	switch os.Args[1] {
 	case "proxy":
 		wg.Add(1)
@@ -41,6 +45,22 @@ func main() {
 			}
 		}()
 	case "test":
+		err := fs.Parse(os.Args[2:])
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// daemon mode
+		if *d {
+			_, err := a.StartTestServer(ctx)
+			if err != nil {
+				log.Fatal(err)
+			}
+			log.Println("don't forget to remove the server!")
+
+			return
+		}
+
 		wg.Add(1)
 		go func() {
 			defer wg.Done()

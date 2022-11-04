@@ -53,16 +53,24 @@ func (a *App) RunProxy(ctx context.Context) error {
 }
 
 func (a *App) RunTestServer(ctx context.Context) error {
-	s, err := a.startDroplet(ctx, "test")
+	s, err := a.StartTestServer(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("running server, %w", err)
 	}
-	log.Println("Run ssh root@" + s.PublicIP)
-
 	<-ctx.Done()
 	a.deleteDroplet(context.Background(), s)
 
 	return nil
+}
+
+func (a *App) StartTestServer(ctx context.Context) (droplets.Server, error) {
+	s, err := a.startDroplet(ctx, "test")
+	if err != nil {
+		return droplets.Server{}, fmt.Errorf("starting server, %w", err)
+	}
+	log.Println("Run ssh root@" + s.PublicIP)
+
+	return s, nil
 }
 
 func (a *App) ListDroplets(ctx context.Context) error {

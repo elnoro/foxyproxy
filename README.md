@@ -31,3 +31,16 @@ Config file example:
 ### Firefox
 
 [Use this instruction from Digital Ocean](https://www.digitalocean.com/community/tutorials/how-to-route-web-traffic-securely-without-a-vpn-using-a-socks-tunnel#step-2-mdash-configuring-firefox-to-use-the-tunnel)
+
+### Development
+
+The project uses [Eartly](https://earthly.dev/)
+Run the following for linters/tests:
+```
+$ earthly +ci
+```
+
+Run the following to build the project:
+```
+$ earthly +buildL
+```
