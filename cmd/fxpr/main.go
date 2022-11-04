@@ -81,6 +81,7 @@ func main() {
 	default:
 		fmt.Println("Invalid command.")
 		showHelp()
+		return
 	}
 
 	sigs := make(chan os.Signal, 1)
