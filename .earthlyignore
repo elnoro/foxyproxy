@@ -1,0 +1,7 @@
+LICENCE
+README.md
+.gitignore
+.git/
+build/
+.idea
+Earthfile
