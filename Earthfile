@@ -32,9 +32,8 @@ lint:
 buildL:
     FROM +code
     ARG USERARCH
-    ARG USEROS
+    ARG GOOS=darwin # TODO use USEROS after https://github.com/earthly/earthly/pull/2334 is released
     ENV GOARCH=$USERARCH
-    ENV GOOS=$USEROS
     RUN go build -o fxpr cmd/fxpr/main.go
     SAVE ARTIFACT fxpr AS LOCAL build/fxpr
 
