@@ -36,14 +36,14 @@ func (a *App) RunProxy(ctx context.Context) error {
 	if err != nil {
 		log.Println("cannot start proxy", err)
 		time.Sleep(30 * time.Second)
-		a.deleteDroplet(ctx, s)
+		a.DeleteDroplet(ctx, s)
 
 		return err
 	}
 	log.Println("proxy started: ", pr)
 
 	<-ctx.Done()
-	a.deleteDroplet(context.Background(), s)
+	a.DeleteDroplet(context.Background(), s)
 	err = pr.Stop()
 	if err != nil {
 		log.Println("cannot stop proxy", err)
@@ -58,7 +58,7 @@ func (a *App) RunTestServer(ctx context.Context) error {
 		return fmt.Errorf("running server, %w", err)
 	}
 	<-ctx.Done()
-	a.deleteDroplet(context.Background(), s)
+	a.DeleteDroplet(context.Background(), s)
 
 	return nil
 }
@@ -98,7 +98,7 @@ func (a *App) init() error {
 	return nil
 }
 
-func (a *App) deleteDroplet(ctx context.Context, s droplets.Server) {
+func (a *App) DeleteDroplet(ctx context.Context, s droplets.Server) {
 	log.Println("deleting droplet with id", s.Id)
 	if err := a.client.DeleteDroplet(ctx, s.Id); err != nil {
 		log.Println("cannot delete droplet", err)
@@ -111,7 +111,7 @@ func (a *App) startDroplet(ctx context.Context, tagPrefix string) (droplets.Serv
 	if err != nil {
 		log.Println("cannot start droplet", err)
 		if s.Id != 0 {
-			a.deleteDroplet(ctx, s)
+			a.DeleteDroplet(ctx, s)
 		}
 
 		return s, err
